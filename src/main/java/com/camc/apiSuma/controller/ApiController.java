@@ -158,18 +158,13 @@ public class ApiController {
             return ResponseEntity.ok("Estado del servicio: Desconocido");
         }
     }
-
-    @PostMapping("/history")
-    public ResponseEntity<String> saveEndpointHistorical(@RequestBody EndpointHistoricalModel historicalModel) {
-        endpointHistoryService.saveEndpointHistorical(historicalModel);
-        return ResponseEntity.ok("Historial del endpoint guardado exitosamente.");
-    }
-
     @GetMapping("/history/all")
-    public ResponseEntity<List<EndpointHistoricalModel>> getAllEndpointHistorical() {
-        List<EndpointHistoricalModel> endpointHistoricalList = endpointHistoryService.getAllEndpointHistorical();
-        return ResponseEntity.ok(endpointHistoricalList);
-    }
+    public ResponseEntity<List<EndpointHistoricalModel>> getAllEndpointHistorical(
+        @RequestParam(defaultValue = "1") int page,
+        @RequestParam(defaultValue = "10") int size) {
+                    List<EndpointHistoricalModel> endpointHistoricalList = endpointHistoryService.getAllEndpointHistorical(page, size);
+    return ResponseEntity.ok(endpointHistoricalList);
+}
 
     private void saveEndpointHistorical(String endpointName, String response, String responseDetail) {
         EndpointHistoricalModel historicalModel = new EndpointHistoricalModel();

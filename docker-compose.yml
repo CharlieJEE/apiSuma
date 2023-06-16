@@ -1,0 +1,24 @@
+version: '2'
+services:
+  app:
+    image: 'apisuma:latest'
+    build:
+      context: .
+    container_name: app
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/bd_localSpring
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=5R0ot2023*
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_JPA_SHOW_SLQ=update
+    ports:
+      - 8082:8085
+  db:
+    image: 'postgres'
+    container_name: db
+    environment:
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=5R0ot2023*
+      - POSTGRES_DB=bd_localSpring
