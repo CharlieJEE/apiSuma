@@ -34,10 +34,6 @@ public class ApiController {
     private ExternalService externalService;
     private EndpointHistoryService endpointHistoryService;
 
-    public ApiController(ExternalService externalService) {
-        this.externalService = externalService;
-    }
-
     private final AtomicInteger requestCount = new AtomicInteger(0);
     private boolean isRequestEnabled = true;
     private long lastRequestTime = System.currentTimeMillis();
@@ -48,17 +44,16 @@ public class ApiController {
         this.endpointHistoryService = endpointHistoryService;
     }
 
-    @Operation(summary = "Suma de dos numeros y genera porcentaje ")
+    @Operation(summary = "Suma de dos números más porcentaje")
     @PostMapping("/sum")
-    public ResponseEntity<String> sumWithIncrease(@RequestBody NumbersRequest numbers) {
+    public ResponseEntity<String> sumarConIncremento(@RequestBody NumbersRequest numbers) {
         if (!isRequestEnabled) {
             long elapsedTime = System.currentTimeMillis() - lastRequestTime;
             long timeToWait = Math.max((REQUEST_RESET_DELAY - elapsedTime) / 1000, 0);
             if (timeToWait > 0) {
-                String errorMessage = "Se ha superado el límite de solicitudes por minuto. Vuelva a intentarlo en "
+                String mensajeError = "Se ha superado el límite de solicitudes por minuto. Vuelva a intentarlo en "
                         + timeToWait + " segundos.";
-                saveEndpointHistorical("/api/sum", "ERROR", errorMessage);
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorMessage);
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(mensajeError);
             } else {
                 isRequestEnabled = true;
             }
@@ -76,34 +71,32 @@ public class ApiController {
             long elapsedTime = System.currentTimeMillis() - lastRequestTime;
             long timeToWait = Math.max((REQUEST_RESET_DELAY - elapsedTime) / 1000, 0);
             if (timeToWait > 0) {
-                String errorMessage = "Se ha superado el límite de solicitudes por minuto. Vuelva a intentarlo en "
+                String mensajeError = "Se ha superado el límite de solicitudes por minuto. Vuelva a intentarlo en "
                         + timeToWait + " segundos.";
-                saveEndpointHistorical("/api/sum", "ERROR", errorMessage);
-                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(errorMessage);
+                return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(mensajeError);
             } else {
                 isRequestEnabled = true;
             }
         }
 
         try {
-            double percentage = externalService.getPercentage();
-            double sum = numbers.getNumber1() + numbers.getNumber2();
-            double result = sum + (sum * percentage / 100);
+            double porcentaje = externalService.getPorcentaje();
+            double suma = numbers.getNumero1() + numbers.getNumero2();
+            double resultado = suma + (suma * porcentaje / 100);
 
             lastRequestTime = System.currentTimeMillis();
 
             // Guardar en el historial
-            saveEndpointHistorical("/api/sum", "SUCCESS", "Suma exitosa con porcentaje: " + percentage + "%");
+            guardarHistoricoEndpoint("/api/sum", "SUCCESS", "Suma exitosa " + numbers.getNumero1() + "+" + numbers.getNumero2() + " con porcentaje: " + porcentaje + "% = " + resultado);
 
-            return ResponseEntity.ok("Resultado: " + result);
+            return ResponseEntity.ok("Resultado: " + resultado);
         } catch (Exception e) {
             e.printStackTrace();
 
             // Guardar en el historial
-            saveEndpointHistorical("/api/sum", "ERROR", "Error al obtener el porcentaje desde el servicio externo");
-
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Fallo en el servicio externo, Error al obtener el porcentaje");
+            guardarHistoricoEndpoint("/api/sum", "ERROR", "Error al obtener el porcentaje desde el servicio externo");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Fallo en el servicio externo, Error al obtener el porcentaje");
+            //throw ManejoExcepcionesApi.errorServicioExterno("Fallo en el servicio externo, Error al obtener el porcentaje");
         }
     }
 
@@ -113,28 +106,38 @@ public class ApiController {
         isRequestEnabled = true;
     }
 
+    @Operation(summary = "Consulta del historial de los llamados a los endpoints")
+    @GetMapping("/history/all")
+    public ResponseEntity<List<EndpointHistoricalModel>> obtenerHistorialCompletoEndpoint(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size) {
+        List<EndpointHistoricalModel> listaHistorialEndpoint = endpointHistoryService.obtenerHistorialCompletoEndpoint(page, size);
+        return ResponseEntity.ok(listaHistorialEndpoint);
+    }
+
+    @Operation(summary = "Simulación de error en el servicio de entrega de porcentaje")
     @PostMapping("/simulate")
-    public ResponseEntity<String> simulateStatus(@RequestBody String body) {
+    public ResponseEntity<String> simularEstado(@RequestBody String body) {
         try {
             JsonReader jsonReader = Json.createReader(new StringReader(body));
             JsonObject jsonObject = jsonReader.readObject();
-            String status = jsonObject.getString("status");
+            String estado = jsonObject.getString("estado");
             MockExternalService mockService = (MockExternalService) externalService;
 
-            if ("error".equalsIgnoreCase(status)) {
-                mockService.simulateError();
+            if ("error".equalsIgnoreCase(estado)) {
+                mockService.simularError();
 
                 // Guardar en el historial
-                saveEndpointHistorical("/api/simulate", "ERROR EL SERVICIO", "Se simula un error en el serivicio");
+                guardarHistoricoEndpoint("/api/simulate", "ERROR EN EL SERVICIO", "Se simula un error en el servicio");
 
-                return ResponseEntity.ok("Creando Simulacion de ERROR en el servicio externo");
-            } else if ("success".equalsIgnoreCase(status)) {
-                mockService.simulateSuccess();
+                return ResponseEntity.ok("Creando simulación de ERROR en el servicio externo");
+            } else if ("activate".equalsIgnoreCase(estado)) {
+                mockService.reanudarServicio();
 
                 // Guardar en el historial
-                saveEndpointHistorical("/api/simulate", "SERVICIO ACTIVO", "Se activa servicio");
+                guardarHistoricoEndpoint("/api/simulate", "SERVICIO ACTIVO", "Se activa servicio");
 
-                return ResponseEntity.ok("Reanudando el funcionamiento del Servicio externo");
+                return ResponseEntity.ok("Reanudando el funcionamiento del servicio externo");
             } else {
                 return ResponseEntity.badRequest().body("Parámetro de estado inválido");
             }
@@ -144,35 +147,29 @@ public class ApiController {
         }
     }
 
+    @Operation(summary = "Verificación de estado del servicio de porcentaje")
     @GetMapping("/check/status")
-    public ResponseEntity<String> checkStatus() {
+    public ResponseEntity<String> verificarEstado() {
         if (externalService instanceof MockExternalService) {
-            boolean isError = ((MockExternalService) externalService).isError();
-            String status = isError ? "El servicio no está disponible" : "Servicio disponible";
+            boolean esError = ((MockExternalService) externalService).esError();
+            String estado = esError ? "El servicio no está disponible" : "Servicio disponible";
 
             // Guardar en el historial
-            saveEndpointHistorical("/api/check/status", "INFO", "Verificación de estado del servicio Estado del servicio: " + status);
+            guardarHistoricoEndpoint("/api/check/status", "INFO", "Verificación de estado del servicio. Estado del servicio: " + estado);
 
-            return ResponseEntity.ok("Estado del servicio: " + status);
+            return ResponseEntity.ok("Estado del servicio: " + estado);
         } else {
             return ResponseEntity.ok("Estado del servicio: Desconocido");
         }
     }
-    @GetMapping("/history/all")
-    public ResponseEntity<List<EndpointHistoricalModel>> getAllEndpointHistorical(
-        @RequestParam(defaultValue = "1") int page,
-        @RequestParam(defaultValue = "10") int size) {
-                    List<EndpointHistoricalModel> endpointHistoricalList = endpointHistoryService.getAllEndpointHistorical(page, size);
-    return ResponseEntity.ok(endpointHistoricalList);
-}
 
-    private void saveEndpointHistorical(String endpointName, String response, String responseDetail) {
-        EndpointHistoricalModel historicalModel = new EndpointHistoricalModel();
-        historicalModel.setEndPointName(endpointName);
-        historicalModel.setResponse(response);
-        historicalModel.setResponseDetail(responseDetail);
-        historicalModel.setResponseDate(new Date());
+    private void guardarHistoricoEndpoint(String nombreEndpoint, String respuesta, String detalleRespuesta) {
+        EndpointHistoricalModel modeloHistorial = new EndpointHistoricalModel();
+        modeloHistorial.setNombreEndpoint(nombreEndpoint);
+        modeloHistorial.setRespuesta(respuesta);
+        modeloHistorial.setDetalleRespuesta(detalleRespuesta);
+        modeloHistorial.setFechaRespuesta(new Date());
 
-        endpointHistoryService.saveEndpointHistorical(historicalModel);
+        endpointHistoryService.guardarHistorialEndpoint(modeloHistorial);
     }
 }

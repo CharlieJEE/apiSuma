@@ -10,15 +10,15 @@ public class MockExternalService implements ExternalService {
     private int retryCount = 0;
     private static final int MAX_RETRY_COUNT = 3;
 
-    public void simulateError() {
+    public void simularError() {
         error = true;
     }
 
-    public void simulateSuccess() {
+    public void reanudarServicio() {
         error = false;
     }
 
-    public boolean isError() {
+    public boolean esError() {
         return error;
     }
 
@@ -26,7 +26,7 @@ public class MockExternalService implements ExternalService {
         return !error;
     }
 
-    public double getPercentage() {
+    public double getPorcentaje() {
         if (error) {
             retryCount++;
             if (retryCount <= MAX_RETRY_COUNT) {

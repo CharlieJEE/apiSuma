@@ -22,12 +22,12 @@ public class EndpointHistoryService {
         this.endpointHistoricalRepository = endpointHistoricalRepository;
     }
 
-    public void saveEndpointHistorical(EndpointHistoricalModel historicalModel) {
+    public void guardarHistorialEndpoint(EndpointHistoricalModel historicalModel) {
         endpointHistoricalRepository.save(historicalModel);
     }
 
-    public List<EndpointHistoricalModel> getAllEndpointHistorical(int page, int size) {
-    Pageable pageable = PageRequest.of(page - 1, size, Sort.by("responseDate").descending());
+    public List<EndpointHistoricalModel> obtenerHistorialCompletoEndpoint(int page, int size) {
+    Pageable pageable = PageRequest.of(page - 1, size, Sort.by("fechaRespuesta").descending());
     Page<EndpointHistoricalModel> pageResult = endpointHistoricalRepository.findAll(pageable);
     return pageResult.getContent();
 }

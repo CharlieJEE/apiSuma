@@ -1,9 +1,9 @@
 package com.camc.apiSuma.services;
 
 public interface ExternalService {
-    void simulateError();
-    void simulateSuccess();
+    void simularError();
+    void reanudarServicio();
     boolean isServiceActive();
-    double getPercentage();
-    boolean isError();
+    double getPorcentaje();
+    boolean esError();
 }

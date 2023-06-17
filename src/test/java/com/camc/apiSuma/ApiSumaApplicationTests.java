@@ -13,6 +13,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -55,13 +56,13 @@ class ApiSumaApplicationTests {
         // Arrange
         NumbersRequest numbersRequest = new NumbersRequest(5, 5);
         double percentage = 10.0;
-        double sum = numbersRequest.getNumber1() + numbersRequest.getNumber2();
+        double sum = numbersRequest.getNumero1() + numbersRequest.getNumero1();
         double expected = sum + (sum * percentage / 100);
 
-        when(externalService.getPercentage()).thenReturn(percentage);
+        when(externalService.getPorcentaje()).thenReturn(percentage);
 
         // Act
-        ResponseEntity<String> response = apiController.sumWithIncrease(numbersRequest);
+        ResponseEntity<String> response = apiController.sumarConIncremento(numbersRequest);
 
         // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -71,7 +72,7 @@ class ApiSumaApplicationTests {
         double actual = Double.parseDouble(responseBody.split(":")[1].trim());
 
         assertEquals(expected, actual);
-        verify(endpointHistoryService, times(1)).saveEndpointHistorical(any(EndpointHistoricalModel.class));
+        verify(endpointHistoryService, times(1)).guardarHistorialEndpoint(any(EndpointHistoricalModel.class));
     }
 
     @Test
@@ -80,22 +81,23 @@ class ApiSumaApplicationTests {
         NumbersRequest numbersRequest = new NumbersRequest(2, 3);
         int maxRequestsPerMinute = 3;
 
-        when(externalService.getPercentage()).thenReturn(0.0);
+        when(externalService.getPorcentaje()).thenReturn(0.0);
 
         // Act
         // Send more than the maximum requests per minute
         for (int i = 0; i < maxRequestsPerMinute + 2; i++) {
-            apiController.sumWithIncrease(numbersRequest);
+            apiController.sumarConIncremento(numbersRequest);
             Thread.sleep(1000); // Esperar 1 segundo entre las solicitudes
         }
 
-        ResponseEntity<String> response = apiController.sumWithIncrease(numbersRequest);
+        ResponseEntity<String> response = apiController.sumarConIncremento(numbersRequest);
 
         // Assert
         assertEquals(HttpStatus.TOO_MANY_REQUESTS, response.getStatusCode());
         assertTrue(response.getBody().contains("Se ha superado el límite de solicitudes por minuto. Vuelva a intentarlo en"));
 
-        verify(endpointHistoryService, atLeast(5)).saveEndpointHistorical(any(EndpointHistoricalModel.class));
+        // Verificar que se haya llamado al menos 3 veces al método guardarHistorialEndpoint
+        verify(endpointHistoryService, atLeast(3)).guardarHistorialEndpoint(any(EndpointHistoricalModel.class));
     }
 
     @Test
@@ -103,27 +105,34 @@ class ApiSumaApplicationTests {
         // Arrange
         NumbersRequest numbersRequest = new NumbersRequest(2, 3);
 
-        when(externalService.getPercentage()).thenThrow(new RuntimeException("Error")); // Modificación: Lanzar una excepción
+        when(externalService.getPorcentaje()).thenThrow(new RuntimeException("Error")); // Lanzar una excepción
 
         // Act
-        ResponseEntity<String> response = apiController.sumWithIncrease(numbersRequest);
+        ResponseEntity<String> response = null;
+        try {
+            response = apiController.sumarConIncremento(numbersRequest);
+        } catch (RuntimeException e) {
+            // Handle the exception here (if needed)
+        }
 
         // Assert
+        assertNotNull(response);
         assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
         assertEquals("Fallo en el servicio externo, Error al obtener el porcentaje", response.getBody());
-        verify(endpointHistoryService, times(1)).saveEndpointHistorical(any(EndpointHistoricalModel.class));
+        verify(endpointHistoryService, times(1)).guardarHistorialEndpoint(any(EndpointHistoricalModel.class));
     }
+
 
     @Test
     void testSimulateStatus() throws Exception {
         mockMvc.perform(MockMvcRequestBuilders.post("/api/simulate")
-                .content("{\"status\": \"error\"}")
+                .content("{\"estado\": \"error\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().string("Creando Simulacion de ERROR en el servicio externo"));
+                .andExpect(MockMvcResultMatchers.content().string("Creando simulación de ERROR en el servicio externo"));
 
         // Verificar que el método simulateError() se haya invocado en externalService
-        Mockito.verify(externalService).simulateError();
+        Mockito.verify(externalService).simularError();
     }
 
 }
