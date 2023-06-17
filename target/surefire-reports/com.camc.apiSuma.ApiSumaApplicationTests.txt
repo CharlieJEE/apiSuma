@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.camc.apiSuma.ApiSumaApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 18.99 s - in com.camc.apiSuma.ApiSumaApplicationTests

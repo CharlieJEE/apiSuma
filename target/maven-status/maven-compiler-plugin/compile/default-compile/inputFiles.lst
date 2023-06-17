@@ -1,0 +1,10 @@
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\controller\ApiController.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\repository\EndpointHistoricalRepository.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\services\ExternalService.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\config\SwaggerConfig.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\services\MockExternalService.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\model\NumbersRequest.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\model\EndpointHistoricalModel.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\ApiSumaApplication.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\services\EndpointHistoryService.java
+C:\Repo\apiSuma\src\main\java\com\camc\apiSuma\ServletInitializer.java

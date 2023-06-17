@@ -1,0 +1,10 @@
+com\camc\apiSuma\model\EndpointHistoricalModel.class
+com\camc\apiSuma\ServletInitializer.class
+com\camc\apiSuma\controller\ApiController.class
+com\camc\apiSuma\config\SwaggerConfig.class
+com\camc\apiSuma\services\MockExternalService.class
+com\camc\apiSuma\model\NumbersRequest.class
+com\camc\apiSuma\ApiSumaApplication.class
+com\camc\apiSuma\services\EndpointHistoryService.class
+com\camc\apiSuma\repository\EndpointHistoricalRepository.class
+com\camc\apiSuma\services\ExternalService.class
