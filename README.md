@@ -73,6 +73,8 @@ al finalizar consultamos **http://localhost:8082/swagger-ui/index.html** para ve
 Tambien revisamos en postman su funcionamiento
 ![enter image description here](https://raw.githubusercontent.com/CharlieJEE/apiSuma/main/img_readme/install/Instalacion10.PNG)
 
+tambien se puede bajar la imagen desde dockerhub.com con el siguiente comando **docker pull karlos23/repo-publico**
+
 ## Agradecimiento
 
 Gracias por usar el APIREST creada por Carlos Arturo Moreno Junio de 2023.
