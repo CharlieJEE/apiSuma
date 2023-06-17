@@ -1,4 +1,4 @@
-# Bienvenido al archivo de Instalcion del API REST de suma mas porcentaje de Carlos Moreno!
+# Bienvenido al readme del API REST de suma mas porcentaje de Carlos Moreno!
 
 En este archivo readme veremos las características del API, su instalación con docker, su uso con postman o swagger-ui y algunas otras caracteristicas.
 
